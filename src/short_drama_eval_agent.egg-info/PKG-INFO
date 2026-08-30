@@ -1,8 +1,0 @@
-Metadata-Version: 2.4
-Name: short-drama-eval-agent
-Version: 0.1.0
-Summary: 短剧一键复刻自动评测 Agent MVP
-Requires-Python: >=3.9
-Requires-Dist: opencv-python<5,>=4.8
-Requires-Dist: requests<3,>=2.31
-Requires-Dist: python-dotenv<2,>=1.0

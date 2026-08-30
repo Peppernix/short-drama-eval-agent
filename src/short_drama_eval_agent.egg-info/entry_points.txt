@@ -1,2 +1,0 @@
-[console_scripts]
-drama-eval = drama_eval.cli:main
