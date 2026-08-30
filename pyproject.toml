@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "short-drama-eval-agent"
+version = "0.1.0"
+description = "短剧一键复刻自动评测 Agent MVP"
+requires-python = ">=3.9"
+dependencies = [
+  "opencv-python>=4.8,<5",
+  "requests>=2.31,<3",
+  "python-dotenv>=1.0,<2",
+]
+
+[project.scripts]
+drama-eval = "drama_eval.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
