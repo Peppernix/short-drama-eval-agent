@@ -1,0 +1,12 @@
+{
+  "sample_id": "example_001",
+  "instruction": "将西方面孔改为东方面孔，将现代背景改为中国古代；保留剧情、人物关系和镜头顺序。",
+  "human_answer": {
+    "scores": {
+      "plot_fidelity": {"score": 4, "reason": "主要冲突得到保留，但结尾情节缺失。", "evidence": ["remake_shot_004_t18.20"]},
+      "instruction_following": {"score": 5, "reason": "人物与时代背景均按要求修改。", "evidence": ["remake_shot_001_t1.20"]},
+      "character_consistency": {"score": 2, "reason": "女主在第四镜头发生身份漂移。", "evidence": ["remake_shot_004_t18.20"]}
+    },
+    "final_decision": "revise"
+  }
+}
