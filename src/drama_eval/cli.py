@@ -9,6 +9,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 from .comparison import compare_with_human
+from .enrichment import attach_evidence, recognize_frame_text, transcribe_video
 from .evaluator import evaluate
 from .video import prepare_video
 
@@ -29,7 +30,9 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--output", type=Path, default=Path("runs"), help="运行输出根目录")
     run.add_argument("--threshold", type=float, default=0.48, help="镜头切分阈值，越低越敏感")
     run.add_argument("--max-frames", type=int, default=24, help="每段视频最多发送的关键帧数")
-    run.add_argument("--prepare-only", action="store_true", help="只做镜头检测和抽帧，不调用模型")
+    run.add_argument("--with-asr", action="store_true", help="提取语音和分段时间戳，辅助剧情与台词评测")
+    run.add_argument("--with-ocr", action="store_true", help="识别关键帧文字，辅助字幕与画面文字评测")
+    run.add_argument("--prepare-only", action="store_true", help="只做预处理，不执行最终综合评测")
 
     compare = sub.add_parser("compare", help="比较一条机评结果与人工黄金答案")
     compare.add_argument("--machine", required=True, type=Path, help="evaluation.json 路径")
@@ -58,7 +61,23 @@ def main() -> None:
     run_dir = args.output / run_id
     original = prepare_video(args.original, run_dir, "original", args.threshold)
     remake = prepare_video(args.remake, run_dir, "remake", args.threshold)
-    request = {"instruction": args.instruction, "original": str(args.original.resolve()), "remake": str(args.remake.resolve())}
+
+    for source, manifest, prefix in (
+        (args.original, original, "original"),
+        (args.remake, remake, "remake"),
+    ):
+        transcript = transcribe_video(source, run_dir / prefix) if args.with_asr else None
+        ocr = recognize_frame_text(manifest, run_dir / prefix, args.max_frames) if args.with_ocr else None
+        attach_evidence(manifest, transcript, ocr)
+        _write_json(run_dir / f"{prefix}_manifest.json", manifest)
+
+    request = {
+        "instruction": args.instruction,
+        "original": str(args.original.resolve()),
+        "remake": str(args.remake.resolve()),
+        "with_asr": args.with_asr,
+        "with_ocr": args.with_ocr,
+    }
     _write_json(run_dir / "request.json", request)
 
     if args.prepare_only:
