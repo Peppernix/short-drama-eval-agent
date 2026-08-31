@@ -51,6 +51,16 @@ drama-eval run \
   --instruction "把现代背景改为中国古代，保留剧情和镜头顺序"
 ```
 
+将机器结果与人工黄金答案比较：
+
+```bash
+drama-eval compare \
+  --machine examples/machine_result.example.json \
+  --gold examples/gold_sample.example.json
+```
+
+比较结果会给出逐维度绝对误差、平均绝对误差、完全一致率、相差不超过 1 分的比例，以及最终上线判断是否一致。这一步就是用黄金集验证“机器评委”是否接近人工标准。
+
 ## 这版 Agent 的工作流
 
 ```text
