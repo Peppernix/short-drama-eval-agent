@@ -35,11 +35,25 @@ def _selected_frames(manifest: Dict[str, Any], max_frames: int) -> Iterable[Dict
 def _video_content(name: str, manifest: Dict[str, Any], max_frames: int) -> List[Dict[str, Any]]:
     content: List[Dict[str, Any]] = [{
         "type": "text",
-        "text": f"{name}：时长 {manifest['duration']} 秒，共 {len(manifest['shots'])} 个检测镜头。以下图片按时间顺序排列。",
+        "text": f"{name}：时长 {manifest['duration']} 秒，共 {len(manifest['shots'])} 个检测镜头。以下证据按时间顺序排列。",
     }]
-    for frame in _selected_frames(manifest, max_frames):
-        content.append({"type": "text", "text": f"证据标签：{frame['label']}"})
-        content.append({"type": "image_url", "image_url": {"url": _data_url(frame["path"]), "detail": "low"}})
+    selected_labels = {frame["label"] for frame in _selected_frames(manifest, max_frames)}
+    for shot in manifest["shots"]:
+        asr_text = " ".join(segment.get("text", "") for segment in shot.get("asr_segments", [])).strip()
+        if asr_text:
+            content.append({
+                "type": "text",
+                "text": f"镜头 {shot['shot_id']}（{shot['start']:.2f}-{shot['end']:.2f} 秒）ASR 台词：{asr_text}",
+            })
+        for frame in shot.get("keyframes", []):
+            if frame["label"] not in selected_labels:
+                continue
+            ocr_text = "；".join(frame.get("ocr_texts", []))
+            evidence_text = f"证据标签：{frame['label']}"
+            if ocr_text:
+                evidence_text += f"；OCR 文字：{ocr_text}"
+            content.append({"type": "text", "text": evidence_text})
+            content.append({"type": "image_url", "image_url": {"url": _data_url(frame["path"]), "detail": "low"}})
     return content
 
 
