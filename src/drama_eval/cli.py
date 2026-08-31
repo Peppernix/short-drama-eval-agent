@@ -8,6 +8,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+from .comparison import compare_with_human
 from .evaluator import evaluate
 from .video import prepare_video
 
@@ -29,13 +30,24 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--threshold", type=float, default=0.48, help="镜头切分阈值，越低越敏感")
     run.add_argument("--max-frames", type=int, default=24, help="每段视频最多发送的关键帧数")
     run.add_argument("--prepare-only", action="store_true", help="只做镜头检测和抽帧，不调用模型")
+
+    compare = sub.add_parser("compare", help="比较一条机评结果与人工黄金答案")
+    compare.add_argument("--machine", required=True, type=Path, help="evaluation.json 路径")
+    compare.add_argument("--gold", required=True, type=Path, help="人工黄金样本 JSON 路径")
+    compare.add_argument("--output", type=Path, help="可选：保存比较结果的 JSON 路径")
     return parser
 
 
 def main() -> None:
     load_dotenv()
     args = build_parser().parse_args()
-    if args.command != "run":
+    if args.command == "compare":
+        machine = json.loads(args.machine.read_text(encoding="utf-8"))
+        gold = json.loads(args.gold.read_text(encoding="utf-8"))
+        result = compare_with_human(machine, gold)
+        if args.output:
+            _write_json(args.output, result)
+        print(json.dumps(result, ensure_ascii=False, indent=2))
         return
 
     for path in (args.original, args.remake):
