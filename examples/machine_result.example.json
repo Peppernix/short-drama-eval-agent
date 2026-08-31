@@ -1,0 +1,8 @@
+{
+  "scores": {
+    "plot_fidelity": {"score": 3, "reason": "检测到部分剧情遗漏", "evidence": []},
+    "instruction_following": {"score": 5, "reason": "指令均被执行", "evidence": []},
+    "character_consistency": {"score": 4, "reason": "人物基本一致", "evidence": []}
+  },
+  "final_decision": "revise"
+}
